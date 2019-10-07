@@ -21,6 +21,7 @@ const Slider = class Slider extends React.Component {
     dragEnabled: PropTypes.bool.isRequired,
     dragStep: PropTypes.number,
     hasMasterSpinner: PropTypes.bool.isRequired,
+    infinite: PropTypes.bool,
     interval: PropTypes.number.isRequired,
     isPageScrollLocked: PropTypes.bool.isRequired,
     isPlaying: PropTypes.bool.isRequired,
@@ -64,6 +65,7 @@ const Slider = class Slider extends React.Component {
     disableAnimation: false,
     disableKeyboard: false,
     dragStep: 1,
+    infinite: false,
     moveThreshold: 0.1,
     onMasterSpinner: null,
     privateUnDisableAnimation: false,
@@ -451,12 +453,21 @@ const Slider = class Slider extends React.Component {
       this.props.totalSlides, this.props.visibleSlides,
     );
 
-    const currentSlide = boundedRange({
+    let currentSlide = boundedRange({
       min: 0,
       max: maxSlide,
       x: (this.props.currentSlide + slidesMoved),
     });
 
+    if (this.props.infinite) {
+      const goToStart = Math.sign(this.state.deltaX) === -1 && this.props.currentSlide === maxSlide;
+      const goToEnd = Math.sign(this.state.deltaX) === 1 && this.props.currentSlide === 0;
+      if (goToStart) {
+        currentSlide = 0;
+      } else if (goToEnd) {
+        currentSlide = maxSlide;
+      }
+    }
     this.props.carouselStore.setStoreState({
       currentSlide,
     });
@@ -516,6 +527,7 @@ const Slider = class Slider extends React.Component {
       disableKeyboard,
       dragEnabled,
       hasMasterSpinner,
+      infinite,
       interval,
       isPageScrollLocked,
       isPlaying,
